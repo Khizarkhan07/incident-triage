@@ -1,0 +1,34 @@
+{
+  "incident_id": "INC-2026-002",
+  "timestamp": "2026-02-17T10:42:18Z",
+  "alert_name": "API Gateway 5xx Error Rate Spike - Auth Service Down",
+  "alert_data": {
+    "source": "New Relic",
+    "description": "API Gateway experiencing unusually high rate of 500 Internal Server Errors. Authentication service unavailable - Redis connection failure causing cascading failures across all customer-facing APIs.",
+    "metrics": {
+      "error_rate_percent": 8.5,
+      "total_requests_per_min": 15420,
+      "failed_requests_per_min": 1310
+    },
+    "affected_services": ["api-gateway", "auth-service", "checkout-api", "user-service"]
+  },
+  "logs": "[2026-02-17 10:42:16] ERROR [auth-service] NullPointerException at TokenValidator.validate\n[2026-02-17 10:42:19] CRITICAL [auth-service] Redis connection failed: Connection refused\n[2026-02-17 10:42:20] ERROR [api-gateway] Upstream service unavailable: auth-service\n[2026-02-17 10:42:21] ERROR [checkout-api] Authentication failed for user requests",
+  "ground_truth": {
+    "severity": "SEV1",
+    "category": "API/Service",
+    "root_causes": [
+      "Auth service Redis cache unavailable (connection refused)",
+      "NullPointerException in TokenValidator causing service crash",
+      "Cascading failures across all APIs requiring authentication"
+    ],
+    "mitigation_steps": [
+      "Restart Redis cluster immediately",
+      "Rollback auth-service to previous stable version",
+      "Reset circuit breaker for auth-service",
+      "Monitor error rate recovery and customer impact"
+    ],
+    "runbooks_used": ["api_5xx_errors.md"],
+    "resolution_time_minutes": 12,
+    "actual_root_cause": "Recent deployment introduced null pointer bug + Redis cluster failure"
+  }
+}

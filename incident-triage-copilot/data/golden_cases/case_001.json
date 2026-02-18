@@ -1,0 +1,34 @@
+{
+  "incident_id": "INC-2026-001",
+  "timestamp": "2026-02-17T08:15:32Z",
+  "alert_name": "PostgreSQL Connection Pool Exhausted",
+  "alert_data": {
+    "source": "DataDog",
+    "description": "Database connection pool has reached maximum capacity. New connection requests are timing out.",
+    "metrics": {
+      "active_connections": 95,
+      "max_connections": 100,
+      "connection_errors_per_min": 127
+    },
+    "affected_services": ["api-gateway", "user-service", "order-service"]
+  },
+  "logs": "[2026-02-17 08:15:29] ERROR [user-service] java.sql.SQLTransientConnectionException: HikariPool-1 - Connection is not available, request timed out after 30000ms\n[2026-02-17 08:15:30] WARN [api-gateway] Database connection pool exhausted (95/100 active connections)",
+  "ground_truth": {
+    "severity": "SEV2",
+    "category": "Database",
+    "root_causes": [
+      "Connection pool size insufficient for current load",
+      "Long-running queries holding connections",
+      "Possible connection leak in application code"
+    ],
+    "mitigation_steps": [
+      "Terminate long-running queries",
+      "Increase connection pool max_connections temporarily",
+      "Investigate application code for connection leaks",
+      "Monitor query performance"
+    ],
+    "runbooks_used": ["db_connection_pool.md"],
+    "resolution_time_minutes": 25,
+    "actual_root_cause": "Traffic spike combined with long-running analytics queries"
+  }
+}

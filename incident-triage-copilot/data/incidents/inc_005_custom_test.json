@@ -1,0 +1,20 @@
+{
+  "incident_id": "INC-2026-005",
+  "timestamp": "2026-02-17T20:30:45Z",
+  "source": "Prometheus",
+  "alert_name": "High CPU Usage and Memory Leak Detected",
+  "description": "Payment processing service showing abnormal CPU spikes (95%+) and continuous memory growth. User reports of payment timeouts and failed transactions increasing.",
+  "metrics": {
+    "cpu_usage_percent": 98,
+    "memory_usage_gb": 14.2,
+    "memory_limit_gb": 16,
+    "failed_transactions_per_min": 43,
+    "avg_response_time_ms": 8750,
+    "error_rate_percent": 12.5,
+    "heap_size_mb": 3840,
+    "gc_pause_time_ms": 1200
+  },
+  "affected_services": ["payment-service", "checkout-api", "billing-service"],
+  "environment": "production",
+  "tags": ["performance", "memory", "cpu", "payments", "critical"]
+}

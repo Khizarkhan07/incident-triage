@@ -1,0 +1,16 @@
+{
+  "incident_id": "INC-2026-003",
+  "timestamp": "2026-02-17T14:23:55Z",
+  "source": "Prometheus",
+  "alert_name": "Kafka Consumer Lag Increasing",
+  "description": "Message processing lag on order-processing topic has increased to 45,000 messages and growing. Normal lag is < 1000.",
+  "metrics": {
+    "consumer_lag": 45000,
+    "messages_per_sec": 450,
+    "consumption_rate_per_sec": 120,
+    "lag_growth_rate_per_min": 19800
+  },
+  "affected_services": ["order-processor", "inventory-service"],
+  "environment": "production",
+  "tags": ["kafka", "message-queue", "data-pipeline", "lag"]
+}

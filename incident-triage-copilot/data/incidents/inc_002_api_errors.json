@@ -1,0 +1,16 @@
+{
+  "incident_id": "INC-2026-002",
+  "timestamp": "2026-02-17T10:42:18Z",
+  "source": "New Relic",
+  "alert_name": "API Gateway 5xx Error Rate Spike",
+  "description": "API Gateway experiencing unusually high rate of 500 Internal Server Errors. Error rate jumped from 0.2% to 8.5% over 5 minutes.",
+  "metrics": {
+    "error_rate_percent": 8.5,
+    "total_requests_per_min": 15420,
+    "failed_requests_per_min": 1310,
+    "p95_latency_ms": 2847
+  },
+  "affected_services": ["api-gateway", "auth-service"],
+  "environment": "production",
+  "tags": ["api", "errors", "5xx", "performance"]
+}

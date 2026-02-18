@@ -1,0 +1,34 @@
+{
+  "incident_id": "INC-2026-003",
+  "timestamp": "2026-02-17T14:23:55Z",
+  "alert_name": "Kafka Consumer Lag Increasing",
+  "alert_data": {
+    "source": "Prometheus",
+    "description": "Message processing lag on order-processing topic has increased to 45,000 messages and growing.",
+    "metrics": {
+      "consumer_lag": 45000,
+      "messages_per_sec": 450,
+      "consumption_rate_per_sec": 120
+    },
+    "affected_services": ["order-processor", "inventory-service"]
+  },
+  "logs": "[2026-02-17 14:22:10] WARN [order-processor] Consumer lag increasing: 32000 messages\n[2026-02-17 14:23:45] ERROR [order-processor] Database query timeout during message processing",
+  "ground_truth": {
+    "severity": "SEV2",
+    "category": "Data Pipeline",
+    "root_causes": [
+      "Consumer processing rate slower than producer rate",
+      "Database queries during message processing timing out",
+      "Insufficient consumer instances for current message volume"
+    ],
+    "mitigation_steps": [
+      "Scale up consumer instances from 3 to 10",
+      "Optimize database queries in consumer code",
+      "Increase consumer batch size for better throughput",
+      "Monitor lag reduction"
+    ],
+    "runbooks_used": ["kafka_consumer_lag.md"],
+    "resolution_time_minutes": 35,
+    "actual_root_cause": "Flash sale caused 4x spike in order volume, consumers couldn't keep up"
+  }
+}

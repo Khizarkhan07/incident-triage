@@ -1,0 +1,16 @@
+{
+  "incident_id": "INC-2026-001",
+  "timestamp": "2026-02-17T08:15:32Z",
+  "source": "DataDog",
+  "alert_name": "PostgreSQL Connection Pool Exhausted",
+  "description": "Database connection pool has reached maximum capacity. New connection requests are timing out.",
+  "metrics": {
+    "active_connections": 95,
+    "max_connections": 100,
+    "connection_errors_per_min": 127,
+    "avg_response_time_ms": 4523
+  },
+  "affected_services": ["api-gateway", "user-service", "order-service"],
+  "environment": "production",
+  "tags": ["database", "postgresql", "connection-pool"]
+}

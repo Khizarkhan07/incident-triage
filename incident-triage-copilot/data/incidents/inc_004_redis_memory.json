@@ -1,0 +1,16 @@
+{
+  "incident_id": "INC-2026-004",
+  "timestamp": "2026-02-17T16:08:12Z",
+  "source": "AWS CloudWatch",
+  "alert_name": "Redis Memory Usage Critical",
+  "description": "Redis cache cluster memory utilization has reached 94%. Evictions are occurring and cache hit rate has dropped significantly.",
+  "metrics": {
+    "memory_used_percent": 94,
+    "cache_hit_rate": 42,
+    "evictions_per_min": 8500,
+    "connected_clients": 342
+  },
+  "affected_services": ["session-manager", "product-catalog", "recommendation-engine"],
+  "environment": "production",
+  "tags": ["redis", "cache", "memory", "performance"]
+}
