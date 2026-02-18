@@ -450,7 +450,7 @@ elif page == "📈 Metrics":
 st.sidebar.markdown("---")
 st.sidebar.markdown("""
 <div style='text-align: center; color: #666; font-size: 0.8em;'>
-Built with ❤️ using Ollama, SQLite & Streamlit<br>
-100% Local • 100% Free
+Built with ❤️ by Khizar Khan<br>
+Powered by Groq, SQLite & Streamlit
 </div>
 """, unsafe_allow_html=True)
