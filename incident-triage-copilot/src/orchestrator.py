@@ -98,10 +98,19 @@ class TriageOrchestrator:
         plan = "## 🚨 Immediate Actions\n\n"
         
         for i, action in enumerate(mitigation.get("immediate_actions", []), 1):
-            plan += f"**{i}. {action['step']}**\n"
+            # Handle both dict and string actions
+            if isinstance(action, str):
+                plan += f"**{i}. {action}**\n\n"
+                continue
+            
+            if not isinstance(action, dict):
+                continue
+            
+            plan += f"**{i}. {action.get('step', 'No step provided')}**\n"
             if action.get("command"):
                 plan += f"```bash\n{action['command']}\n```\n"
-            plan += f"✅ Expected: {action['expected_outcome']}\n"
+            if action.get("expected_outcome"):
+                plan += f"✅ Expected: {action['expected_outcome']}\n"
             if action.get("citation"):
                 plan += f"📖 Source: {action['citation']}\n"
             plan += "\n"
@@ -109,7 +118,14 @@ class TriageOrchestrator:
         if mitigation.get("investigation_steps"):
             plan += "\n## 🔍 Investigation Steps\n\n"
             for i, step in enumerate(mitigation.get("investigation_steps", []), 1):
-                plan += f"{i}. {step['step']}\n"
+                if isinstance(step, str):
+                    plan += f"{i}. {step}\n"
+                    continue
+                
+                if not isinstance(step, dict):
+                    continue
+                
+                plan += f"{i}. {step.get('step', 'No step provided')}\n"
                 if step.get("citation"):
                     plan += f"   📖 {step['citation']}\n"
         
