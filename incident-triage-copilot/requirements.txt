@@ -3,11 +3,12 @@ streamlit>=1.31.0
 pydantic>=2.10.0
 pyyaml>=6.0.1
 
-# LLM
+# LLM - Cloud and Local options
+groq>=0.4.0
 ollama==0.1.6
 
 # Vector store
-sqlite-vec==0.1.1
+# sqlite-vec==0.1.1  # Removed - causes build issues on cloud platforms
 sentence-transformers==2.3.1
 
 # Utilities
