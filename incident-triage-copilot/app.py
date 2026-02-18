@@ -18,6 +18,7 @@ sys.path.insert(0, str(APP_DIR))
 from src.llm.ollama_client import OllamaClient
 from src.llm.groq_client import GroqClient
 from src.storage.runbook_store import RunbookStore
+from src.storage.incident_store import IncidentStore
 from src.orchestrator import TriageOrchestrator
 from src.evaluation.evaluator import TriageEvaluator
 from src.models import IncidentContext, IncidentAlert
@@ -92,6 +93,11 @@ def init_components():
     # Index runbooks
     runbook_store.index_runbooks()
     
+    # Incident Store
+    incident_store = IncidentStore(
+        db_path=config["vector_store"]["path"]
+    )
+    
     # Metrics Tracker
     metrics = MetricsTracker(
         feedback_file=config["storage"]["feedback_file"]
@@ -110,10 +116,10 @@ def init_components():
         golden_cases_dir=config["storage"]["golden_cases_dir"]
     )
     
-    return orchestrator, runbook_store, metrics, evaluator
+    return orchestrator, runbook_store, incident_store, metrics, evaluator
 
 try:
-    orchestrator, runbook_store, metrics, evaluator = init_components()
+    orchestrator, runbook_store, incident_store, metrics, evaluator = init_components()
 except Exception as e:
     st.error(f"Failed to initialize components: {e}")
     st.info("Make sure Ollama is running: `brew install ollama && ollama serve`")
@@ -125,7 +131,7 @@ st.sidebar.markdown("---")
 
 page = st.sidebar.radio(
     "Navigation",
-    ["🆕 New Incident", "📊 Evaluate", "📚 Runbooks", "📈 Metrics"]
+    ["🆕 New Incident", "� History", "�📊 Evaluate", "📚 Runbooks", "📈 Metrics"]
 )
 
 st.sidebar.markdown("---")
@@ -258,6 +264,9 @@ if page == "🆕 New Incident":
                 progress_bar.empty()
                 status_text.empty()
             
+            # Save incident to database
+            incident_store.save_incident(result, incident.alert.alert_name)
+            
             # Display results
             st.success(f"✅ Triage completed in {result.processing_time:.2f}s")
             
@@ -304,7 +313,91 @@ if page == "🆕 New Incident":
             st.error(f"Error during triage: {e}")
             logger.error(f"Triage error: {e}", exc_info=True)
 
-elif page == "📊 Evaluate":
+elif page == "� History":
+    st.title("📜 Incident History")
+    st.markdown("View and search previously triaged incidents.")
+    
+    # Get statistics
+    stats = incident_store.get_stats()
+    
+    # Display stats
+    col1, col2, col3, col4 = st.columns(4)
+    with col1:
+        st.metric("Total Incidents", stats.get("total_incidents", 0))
+    with col2:
+        sev_stats = stats.get("by_severity", {})
+        st.metric("SEV1 Count", sev_stats.get("SEV1", 0))
+    with col3:
+        st.metric("Avg Time", stats.get("avg_processing_time", "N/A"))
+    with col4:
+        cat_count = len(stats.get("by_category", {}))
+        st.metric("Categories", cat_count)
+    
+    st.markdown("---")
+    
+    # Search filters
+    col1, col2, col3 = st.columns([2, 2, 1])
+    with col1:
+        filter_severity = st.selectbox(
+            "Filter by Severity",
+            ["All"] + config["triage"]["severity_levels"]
+        )
+    with col2:
+        filter_category = st.selectbox(
+            "Filter by Category",
+            ["All"] + config["triage"]["categories"]
+        )
+    with col3:
+        limit = st.number_input("Show", min_value=10, max_value=100, value=20, step=10)
+    
+    # Fetch incidents
+    if filter_severity == "All" and filter_category == "All":
+        incidents = incident_store.get_all_incidents(limit=limit)
+    else:
+        incidents = incident_store.search_incidents(
+            severity=None if filter_severity == "All" else filter_severity,
+            category=None if filter_category == "All" else filter_category,
+            limit=limit
+        )
+    
+    # Display incidents
+    if not incidents:
+        st.info("No incidents found. Triage some incidents to see them here!")
+    else:
+        st.markdown(f"### 📋 Found {len(incidents)} Incidents")
+        
+        for incident in incidents:
+            with st.expander(
+                f"{'🔴' if incident['severity'] == 'SEV1' else '🟠' if incident['severity'] == 'SEV2' else '🟡' if incident['severity'] == 'SEV3' else '🟢'} "
+                f"{incident['incident_id']} - {incident['alert_name']} ({incident['timestamp'][:19]})"
+            ):
+                col1, col2, col3 = st.columns(3)
+                with col1:
+                    st.markdown(f"**Severity:** {incident['severity']}")
+                    st.markdown(f"**Category:** {incident['category']}")
+                with col2:
+                    st.markdown(f"**Processing Time:** {incident['processing_time']:.2f}s")
+                    st.markdown(f"**Triaged At:** {incident['created_at'][:19]}")
+                with col3:
+                    st.markdown(f"**Runbooks Used:** {len(incident.get('relevant_runbooks', []))}")
+                
+                st.markdown("#### 🔍 Root Causes")
+                for i, cause in enumerate(incident.get('root_causes', []), 1):
+                    st.markdown(f"{i}. {cause}")
+                
+                st.markdown("#### 🛠️ Mitigation Plan")
+                mitigation = incident.get('mitigation_plan', {})
+                if isinstance(mitigation, dict):
+                    st.markdown(mitigation.get('summary', 'No mitigation plan available'))
+                else:
+                    st.markdown(str(mitigation))
+                
+                if incident.get('relevant_runbooks'):
+                    st.markdown("#### 📚 Referenced Runbooks")
+                    for rb in incident['relevant_runbooks']:
+                        st.markdown(f"- {rb['title']} (Similarity: {rb['similarity']:.0%})")
+
+elif page == "�📊 Evaluate":
     st.title("📊 Evaluation Dashboard")
     st.markdown("Evaluate the copilot's performance on golden test cases.")
     
