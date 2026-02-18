@@ -9,7 +9,7 @@ ollama==0.1.6
 
 # Vector store
 # sqlite-vec==0.1.1  # Removed - causes build issues on cloud platforms
-sentence-transformers==2.3.1
+sentence-transformers>=2.3.0,<3.0.0
 
 # Utilities
 python-dateutil==2.8.2
