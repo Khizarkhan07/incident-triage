@@ -1,11 +1,13 @@
 # Incident Triage Copilot Configuration
 
 llm:
-  provider: "ollama"
-  model: "llama3.1:8b"  # Upgraded for better accuracy (was llama3.2)
-  base_url: "http://localhost:11434"
+  provider: "groq"  # Options: "ollama" (local) or "groq" (cloud)
+  model: "llama-3.1-8b-instant"  # For Groq. For Ollama use: "llama3.1:8b"
+  base_url: "http://localhost:11434"  # Only used for Ollama
   temperature: 0.1
   max_tokens: 2048
+  
+  # For Groq: Set GROQ_API_KEY environment variable
 
 embeddings:
   model: "all-MiniLM-L6-v2"  # Fast, local sentence-transformer

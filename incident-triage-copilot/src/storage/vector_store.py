@@ -20,9 +20,18 @@ class VectorStore:
     ):
         self.db_path = db_path
         self.dimension = dimension
-        self.embedding_model = SentenceTransformer(embedding_model)
+        self.embedding_model_name = embedding_model
+        self._embedding_model = None  # Lazy load
         self._init_db()
         logger.info(f"Initialized VectorStore with model: {embedding_model}")
+    
+    @property
+    def embedding_model(self):
+        """Lazy load embedding model to speed up startup."""
+        if self._embedding_model is None:
+            logger.info(f"Loading embedding model: {self.embedding_model_name}")
+            self._embedding_model = SentenceTransformer(self.embedding_model_name)
+        return self._embedding_model
     
     def _init_db(self):
         """Initialize SQLite database with vector extension."""

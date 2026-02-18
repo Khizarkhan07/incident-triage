@@ -7,6 +7,10 @@ An AI-powered assistant that helps triage production incidents by analyzing aler
 - **Learn from feedback** through post-incident reviews
 - **Track performance** via evaluation metrics
 
+**🚀 Now deployable to cloud!** Works with both:
+- **Ollama** (local, private, free) - Best for development
+- **Groq** (cloud, fast, free tier) - Best for public demos
+
 ## Architecture
 
 ```
@@ -24,8 +28,8 @@ An AI-powered assistant that helps triage production incidents by analyzing aler
     ┌────┴────┬─────────┬──────────┐
     │         │         │          │
 ┌───▼───┐ ┌──▼──┐ ┌────▼────┐ ┌──▼───┐
-│Ollama │ │Vec  │ │ Runbook │ │Eval  │
-│ LLM   │ │Store│ │  Store  │ │Engine│
+│Groq / │ │Vec  │ │ Runbook │ │Eval  │
+│Ollama │ │Store│ │  Store  │ │Engine│
 └───────┘ └─────┘ └─────────┘ └──────┘
 ```
 

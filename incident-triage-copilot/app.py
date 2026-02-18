@@ -16,6 +16,7 @@ os.chdir(APP_DIR)
 sys.path.insert(0, str(APP_DIR))
 
 from src.llm.ollama_client import OllamaClient
+from src.llm.groq_client import GroqClient
 from src.storage.runbook_store import RunbookStore
 from src.orchestrator import TriageOrchestrator
 from src.evaluation.evaluator import TriageEvaluator
@@ -42,22 +43,45 @@ def load_config():
 
 config = load_config()
 
-# Initialize components
 @st.cache_resource
 def init_components():
     """Initialize all system components."""
     
-    # LLM Client
-    llm = OllamaClient(
-        model=config["llm"]["model"],
-        base_url=config["llm"]["base_url"],
-        temperature=config["llm"]["temperature"],
-        max_tokens=config["llm"]["max_tokens"]
-    )
+    # LLM Client - support both Ollama and Groq
+    provider = config["llm"]["provider"].lower()
     
-    # Check if Ollama is available
-    if not llm.is_available():
-        st.error("⚠️ Ollama is not running or model not available. Please run: `ollama pull llama3.2`")
+    if provider == "groq":
+        # Use Groq cloud API
+        api_key = os.getenv("GROQ_API_KEY") or st.secrets.get("GROQ_API_KEY")
+        if not api_key:
+            st.error("⚠️ GROQ_API_KEY not found. Please set it in .streamlit/secrets.toml or environment variables.")
+            st.stop()
+        
+        llm = GroqClient(
+            model=config["llm"]["model"],
+            api_key=api_key,
+            temperature=config["llm"]["temperature"],
+            max_tokens=config["llm"]["max_tokens"]
+        )
+        st.sidebar.success(f"✅ Using Groq: {config['llm']['model']}")
+        
+    elif provider == "ollama":
+        # Use local Ollama
+        llm = OllamaClient(
+            model=config["llm"]["model"],
+            base_url=config["llm"]["base_url"],
+            temperature=config["llm"]["temperature"],
+            max_tokens=config["llm"]["max_tokens"]
+        )
+        
+        # Check if Ollama is available
+        if not llm.is_available():
+            st.error("⚠️ Ollama is not running or model not available. Please run: `ollama pull llama3.1:8b`")
+            st.stop()
+        
+        st.sidebar.success(f"✅ Using Ollama: {config['llm']['model']}")
+    else:
+        st.error(f"❌ Unknown LLM provider: {provider}. Use 'ollama' or 'groq'")
         st.stop()
     
     # Runbook Store
