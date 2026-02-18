@@ -297,50 +297,6 @@ if page == "🆕 New Incident":
                     with st.expander(f"📖 {rb['title']} (Similarity: {rb['similarity']:.0%})"):
                         content = runbook_store.get_runbook_by_path(rb['file_path'])
                         st.markdown(content)
-            
-            # Feedback
-            st.markdown("---")
-            st.markdown("### 📝 Feedback")
-            with st.form("feedback_form"):
-                st.markdown("Help improve the copilot by providing feedback:")
-                
-                col1, col2 = st.columns(2)
-                with col1:
-                    actual_severity = st.selectbox(
-                        "Actual Severity",
-                        config["triage"]["severity_levels"],
-                        index=config["triage"]["severity_levels"].index(result.severity)
-                    )
-                    actual_category = st.selectbox(
-                        "Actual Category",
-                        config["triage"]["categories"],
-                        index=config["triage"]["categories"].index(result.category) if result.category in config["triage"]["categories"] else 0
-                    )
-                with col2:
-                    root_cause_accuracy = st.slider(
-                        "Root Cause Accuracy",
-                        0.0, 1.0, 0.7, 0.1,
-                        help="How accurate were the identified root causes?"
-                    )
-                    mitigation_helpful = st.checkbox(
-                        "Mitigation Plan Helpful",
-                        value=True
-                    )
-                
-                feedback_notes = st.text_area("Additional Notes")
-                
-                submit_feedback = st.form_submit_button("Submit Feedback")
-                
-                if submit_feedback:
-                    metrics.record_feedback(
-                        incident_id=result.incident_id,
-                        severity_actual=actual_severity,
-                        category_actual=actual_category,
-                        root_cause_accuracy=root_cause_accuracy,
-                        mitigation_helpful=mitigation_helpful,
-                        notes=feedback_notes
-                    )
-                    st.success("✅ Thank you for your feedback!")
         
         except json.JSONDecodeError as e:
             st.error(f"Invalid JSON: {e}")
@@ -411,7 +367,7 @@ elif page == "📚 Runbooks":
 
 elif page == "📈 Metrics":
     st.title("📈 Performance Metrics")
-    st.markdown("View copilot performance metrics and feedback.")
+    st.markdown("View copilot performance metrics.")
     
     summary = metrics.get_summary()
     
@@ -422,29 +378,6 @@ elif page == "📈 Metrics":
         st.metric("Avg Processing Time", summary.get("avg_processing_time", "N/A"))
     with col3:
         st.metric("Session Start", summary.get("session_start", "N/A")[:19])
-    
-    # Load feedback if available
-    feedback_file = Path(config["storage"]["feedback_file"])
-    if feedback_file.exists():
-        st.markdown("### 📝 Recent Feedback")
-        
-        feedbacks = []
-        with open(feedback_file, 'r') as f:
-            for line in f:
-                feedbacks.append(json.loads(line))
-        
-        if feedbacks:
-            for fb in reversed(feedbacks[-10:]):  # Show last 10
-                with st.expander(f"{fb['incident_id']} - {fb['timestamp'][:19]}"):
-                    st.markdown(f"**Actual:** {fb['severity_actual']} / {fb['category_actual']}")
-                    st.markdown(f"**Root Cause Accuracy:** {fb['root_cause_accuracy']:.0%}")
-                    st.markdown(f"**Mitigation Helpful:** {'✅' if fb['mitigation_helpful'] else '❌'}")
-                    if fb.get('notes'):
-                        st.markdown(f"**Notes:** {fb['notes']}")
-        else:
-            st.info("No feedback recorded yet")
-    else:
-        st.info("No feedback data available")
 
 # Footer
 st.sidebar.markdown("---")
