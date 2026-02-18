@@ -32,15 +32,21 @@ class MitigationPlanner:
     ) -> Dict[str, any]:
         """Generate actionable mitigation plan with citations."""
         
+        # Filter runbooks by similarity threshold (0.3 = 30% minimum)
+        SIMILARITY_THRESHOLD = 0.3
+        high_quality_runbooks = [rb for rb in relevant_runbooks if rb.get('similarity', 0) >= SIMILARITY_THRESHOLD]
+        
         # Get full runbook content for top matches
         runbook_mitigation_steps = ""
-        if relevant_runbooks:
+        if high_quality_runbooks:
             runbook_mitigation_steps = "\n\n--- MITIGATION STEPS FROM RUNBOOKS ---\n"
-            for rb in relevant_runbooks[:2]:  # Top 2 runbooks
+            for rb in high_quality_runbooks[:2]:  # Top 2 runbooks
                 content = self.runbook_store.get_runbook_by_path(rb["file_path"])
                 if content and "## Immediate Mitigation" in content:
                     mitigation_section = content.split("## Immediate Mitigation")[1].split("##")[0]
-                    runbook_mitigation_steps += f"\nFrom: {rb['title']}\n{mitigation_section}\n"
+                    runbook_mitigation_steps += f"\nFrom: {rb['title']} (Similarity: {rb['similarity']:.2f})\n{mitigation_section}\n"
+        else:
+            runbook_mitigation_steps = "\n\n--- No high-quality runbook matches. Generating plan from general SRE best practices. ---\n"
         
         system_prompt = """You are an expert SRE creating an incident mitigation plan. Your plan should be:
 1. ACTIONABLE: Specific commands/steps, not vague suggestions

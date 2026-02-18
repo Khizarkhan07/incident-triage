@@ -17,6 +17,7 @@ vector_store:
   type: "sqlite"
   path: "data/vector_store.db"
   top_k: 5
+  similarity_threshold: 0.3  # Minimum similarity score (0.0-1.0) to use runbooks
 
 storage:
   incidents_dir: "data/incidents"

@@ -32,11 +32,15 @@ class RootCauseAnalyzer:
         
         # Search for relevant runbooks
         search_query = f"{incident.alert.alert_name} {incident.alert.description}"
-        relevant_runbooks = self.runbook_store.search_runbooks(
+        all_runbooks = self.runbook_store.search_runbooks(
             query=search_query,
             top_k=3,
             category=category
         )
+        
+        # Filter by similarity threshold (0.3 = 30% minimum)
+        SIMILARITY_THRESHOLD = 0.3
+        relevant_runbooks = [rb for rb in all_runbooks if rb['similarity'] >= SIMILARITY_THRESHOLD]
         
         # Build context from runbooks
         runbook_context = ""
@@ -49,6 +53,8 @@ class RootCauseAnalyzer:
                 if "## Root Causes" in content:
                     root_section = content.split("## Root Causes")[1].split("##")[0]
                     runbook_context += f"{root_section[:500]}...\n"
+        else:
+            runbook_context = "\n\n--- No matching runbooks found (similarity < 30%). Using general SRE knowledge. ---\n"
         
         system_prompt = """You are an expert SRE performing root cause analysis. Analyze the incident and identify the most likely root causes based on:
 1. The alert metrics and description
